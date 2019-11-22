@@ -25,7 +25,7 @@ Goal::Goal()
 {
 	nh = ros::NodeHandle("");
 	
-	pspace_sub = nh.subscribe("/p_space", 1,&Goal::pspaceCB, this);
+	pspace_sub = nh.subscribe("/detector/p_space", 1,&Goal::pspaceCB, this);
 	goal_pub = nh.advertise<geometry_msgs::PoseStamped>("move_base_simple/goal",1);
 
 	nh.param("ptype", parking_type, 0);
