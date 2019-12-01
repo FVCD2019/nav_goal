@@ -2,8 +2,10 @@
 #include <time.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <std_msgs/Int16MultiArray.h>
+#include <tf/transform_listener.h>
 
 using namespace std;
+tf::StampedTransform transform_mo;
 
 class Goal
 {
@@ -27,35 +29,42 @@ Goal::Goal()
 	
 	pspace_sub = nh.subscribe("/detector/p_space", 1,&Goal::pspaceCB, this);
 	goal_pub = nh.advertise<geometry_msgs::PoseStamped>("move_base_simple/goal",1);
-
+	
 	nh.param("ptype", parking_type, 0);
-	prev_id = 0;
+	prev_id = -1;
 }
 
 
 void Goal::pspaceCB(const std_msgs::Int16MultiArray& msg)
 {
+	cout << "nav_goal callback : " << msg.data[0] << endl;
 	double z_val = 0;
 	double w_val = 1;
 	if(parking_type == 1){
-		z_val = 0.70520064234;
-		w_val = 0.70909008370475;
+		cout << "parking type is front" << endl;
+		z_val = -0.0109296593219;
+		w_val = 0.99994026949;
 	}else{
-		z_val = -0.711190612984;
-		w_val = 0.0702999226476;
+		cout << "parking type is back" << endl;
+		z_val = 1;
+		w_val = 0.00142391099113;
 	}
 	if(msg.data[0] != prev_id){
-		goal_point.header.frame_id = "map";
+		//ros::Duration(0.5).sleep();
+		goal_point.header.frame_id = "odom";
 		goal_point.header.stamp = ros::Time::now();
-		goal_point.pose.position.x = (msg.data[1])*0.005;
-		goal_point.pose.position.y = (1200 - msg.data[2])*0.005;
+		goal_point.pose.position.x = (1200 - msg.data[2])*0.005 - transform_mo.getOrigin().y();
+		goal_point.pose.position.y = transform_mo.getOrigin().x() - (msg.data[1])*0.005;
+		//goal_point.pose.position.x = transform_mo.getOrigin().x() - (msg.data[1])*0.005;
+		//goal_point.pose.position.y = (1200 - msg.data[2])*0.005 - transform_mo.getOrigin().y();
 		goal_point.pose.position.z = 0;
 		goal_point.pose.orientation.x = 0;
 		goal_point.pose.orientation.y = 0;
 		goal_point.pose.orientation.z = z_val;
 		goal_point.pose.orientation.w = w_val;
-
+		
 		goal_pub.publish(goal_point);
+		cout << "nav_goal pub!!!!" << endl;
 		prev_id = msg.data[0];
 	}
 
@@ -67,6 +76,18 @@ int main(int argc, char** argv)
 	Goal Goal;
 
 	ros::Rate rate(1);
+	tf::TransformListener listener;
+	ros::Duration(2).sleep();
+	while(ros::ok()){
+    		try{
+      			listener.lookupTransform("map", "odom",  ros::Time(0), transform_mo);
+			break;
+    		}
+    		catch (tf::TransformException ex){
+      			ROS_ERROR("%s",ex.what());
+    		}
+	}
+	cout << transform_mo.getOrigin().x() << endl;
 	while(ros::ok()){
 		ros::spinOnce();
 		rate.sleep();
