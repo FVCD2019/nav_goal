@@ -42,18 +42,34 @@ void Goal::pspaceCB(const std_msgs::Int16MultiArray& msg)
 	double w_val = 1;
 	if(parking_type == 1){
 		cout << "parking type is front" << endl;
-		z_val = -0.0109296593219;
-		w_val = 0.99994026949;
+		if(msg.data[0] < 5){
+			z_val = -0.0109296593219;
+			w_val = 0.99994026949;
+		}else{
+			z_val = 0.999998850962;
+			w_val = -0.00142391099113;
+		}
 	}else{
 		cout << "parking type is back" << endl;
-		z_val = 1;
-		w_val = 0.00142391099113;
+		if(msg.data[0] < 5){
+			z_val = 0.999998850962;
+			w_val = -0.00142391099113;
+		}else{
+			z_val = -0.0109296593219;
+			w_val = 0.99994026949;
+
+		}
 	}
 	if(msg.data[0] != prev_id){
 		//ros::Duration(0.5).sleep();
 		goal_point.header.frame_id = "odom";
 		goal_point.header.stamp = ros::Time::now();
-		goal_point.pose.position.x = (1200 - msg.data[2])*0.005 - transform_mo.getOrigin().y();
+		if(msg.data[0] < 5){
+			goal_point.pose.position.x = (1200 - (msg.data[2]+25))*0.005 - transform_mo.getOrigin().y();
+		}
+		else{
+			goal_point.pose.position.x = (1200 - (msg.data[2]-25))*0.005 - transform_mo.getOrigin().y();
+		}
 		goal_point.pose.position.y = transform_mo.getOrigin().x() - (msg.data[1])*0.005;
 		//goal_point.pose.position.x = transform_mo.getOrigin().x() - (msg.data[1])*0.005;
 		//goal_point.pose.position.y = (1200 - msg.data[2])*0.005 - transform_mo.getOrigin().y();
