@@ -1,5 +1,5 @@
 <launch>
   <node pkg="nav_goal" type="nav_goal" name="nav_goal" output="screen"/>
 	<!--up space 0 is back 1 is front-->
-	<param name="ptype" value="0" />
+	<param name="ptype" value="1" />
 </launch>

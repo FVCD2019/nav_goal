@@ -65,10 +65,10 @@ void Goal::pspaceCB(const std_msgs::Int16MultiArray& msg)
 		goal_point.header.frame_id = "odom";
 		goal_point.header.stamp = ros::Time::now();
 		if(msg.data[0] < 5){
-			goal_point.pose.position.x = (1200 - (msg.data[2]+25))*0.005 - transform_mo.getOrigin().y();
+			goal_point.pose.position.x = (1200 - (msg.data[2]))*0.005 - transform_mo.getOrigin().y();
 		}
 		else{
-			goal_point.pose.position.x = (1200 - (msg.data[2]-25))*0.005 - transform_mo.getOrigin().y();
+			goal_point.pose.position.x = (1200 - (msg.data[2]))*0.005 - transform_mo.getOrigin().y();
 		}
 		goal_point.pose.position.y = transform_mo.getOrigin().x() - (msg.data[1])*0.005;
 		//goal_point.pose.position.x = transform_mo.getOrigin().x() - (msg.data[1])*0.005;
